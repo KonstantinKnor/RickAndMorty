@@ -13,7 +13,7 @@ final class RMRequest {
         static let baseURL = "https://rickandmortyapi.com/api"
     }
     /// Desired endpoint
-    private let endpoint: Endpoint
+    private let endpoint: RMEndpoint
     /// Path components for API, if any
     private let pathComponents: [String]
     ///Query arguments for API, if any
@@ -43,13 +43,51 @@ final class RMRequest {
     }
     /// Desired http method
     public let httpMethod = "GET"
-    init(endpoint: Endpoint,
-         pathComponents: [String] = [],
-         queryParameters: [URLQueryItem] = []
-        ) {
+    public init(endpoint: RMEndpoint,
+                pathComponents: [String] = [],
+                queryParameters: [URLQueryItem] = []
+            ) {
         self.endpoint = endpoint
         self.pathComponents = pathComponents
         self.queryParameters = queryParameters
+    }
+    
+    convenience init?(url: URL){ // не обязательный инициализатор, но должен содержать ссылку на обязавтельный
+        let string = url.absoluteString
+        print(string)
+        if !string.contains(Constants.baseURL){// проверяем содержит ли передаваемый url baseURL
+            return nil
+        }
+        let trimmed = string.replacingOccurrences(of: Constants.baseURL + "/",
+                                                  with: "")
+        print(trimmed)
+        if trimmed.contains("/"){
+            let components = trimmed.components(separatedBy: "/")
+            print(components)
+            if !components.isEmpty {
+                let endpointString = components[0]
+                print(endpointString)
+                if let rmEndpoint = RMEndpoint(rawValue: endpointString){
+                    print(rmEndpoint)
+                    self.init(endpoint: rmEndpoint)
+                    return
+                }
+            }
+        } else if trimmed.contains("?"){
+            let components = trimmed.components(separatedBy: "?")
+            print(components)
+            if !components.isEmpty {
+                let endpointString = components[0]
+                print(endpointString)
+                if let rmEndpoint = RMEndpoint(rawValue: endpointString){
+                    print(rmEndpoint)
+                    self.init(endpoint: rmEndpoint)
+                    return
+                }
+            }
+        }
+        
+        return nil
     }
 }
 
