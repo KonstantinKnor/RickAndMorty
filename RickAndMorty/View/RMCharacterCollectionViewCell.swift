@@ -37,7 +37,6 @@ final class RMCharacterCollectionViewCell: UICollectionViewCell {
         contentView.addSubviews(imageView, nameLabel, statusLabel)
         setUpLayer()
         addConstraints()
-        
     }
     
     required init?(coder: NSCoder) {

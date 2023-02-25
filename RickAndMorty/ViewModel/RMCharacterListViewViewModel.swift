@@ -3,6 +3,7 @@ import UIKit
 
 protocol RMCharacterListViewViewModelDelegate: AnyObject{
     func didLoadInitialCharacters()
+    func didLoadMoreCharacters()
     func didSelectCharacter(_ character: RMCharacter) // урок 9
 }
 
@@ -20,6 +21,7 @@ final class RMCharacterListViewViewModel: NSObject {
                     characterImageURL: URL(string: character.image)
                 )
                 cellViewModel.append(viewModel)
+               
             }
         }
     }
@@ -49,10 +51,31 @@ final class RMCharacterListViewViewModel: NSObject {
     public func fetchAdditionalCharacters(){
         isLoadingListViewCharacters = true
         guard let nextUrlString = apiInfo?.next,
-              let url = URL(string: nextUrlString) else { return }
-        
-        let request = RMRequest(url: url)
-        
+              let url = URL(string: nextUrlString),
+              let request = RMRequest(url: url) else {
+            isLoadingListViewCharacters = false
+            print("Failed to create request")
+            return
+        }
+        RMService.shared.execute(request,
+                                 expecting: RMGetAllCharacterResponse.self) { [weak self] result in
+            guard let strongSelf = self else { return }
+            switch result {
+            case .success(let responceModel):
+                strongSelf.cellViewModel.removeAll()
+                let newResults = responceModel.results
+                let info = responceModel.info
+                strongSelf.characters.append(contentsOf: newResults)
+                strongSelf.apiInfo = info
+                DispatchQueue.main.async {
+                    strongSelf.delegate?.didLoadMoreCharacters()
+                    strongSelf.isLoadingListViewCharacters = false
+                }
+            case .failure(let error):
+                print(String(describing: error))
+                strongSelf.isLoadingListViewCharacters = false
+            }
+        }
     }
     
     public var shouldShowLoadMoreIndicator: Bool {
@@ -67,7 +90,6 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RMCharacterCollectionViewCell.cellIdentifier, for: indexPath) as? RMCharacterCollectionViewCell else { fatalError("Unsupported cell") }
-        
         cell.configure(with: cellViewModel[indexPath.row])
         return cell
     }
@@ -108,8 +130,9 @@ extension RMCharacterListViewViewModel: UICollectionViewDataSource, UICollection
 // MARK: - ScrollView
 extension RMCharacterListViewViewModel: UIScrollViewDelegate{
     func scrollViewDidScroll(_ scrollView: UIScrollView) { // вызывается когда страница прокрученна до конца
-        guard shouldShowLoadMoreIndicator, !isLoadingListViewCharacters else {
-            return }
+        guard shouldShowLoadMoreIndicator,
+              !isLoadingListViewCharacters else { return }
+        
         let ofset = scrollView.contentOffset.y
         let totalContentHeight = scrollView.contentSize.height
         let totalScrollViewHeight = scrollView.frame.size.height
