@@ -9,11 +9,11 @@ import Foundation
 
 final class RMRequest {
     /// API Constants
-    private struct Constants{
+    private struct Constants {
         static let baseURL = "https://rickandmortyapi.com/api"
     }
     /// Desired endpoint
-    private let endpoint: RMEndpoint
+    let endpoint: RMEndpoint
     /// Path components for API, if any
     private let pathComponents: [String]
     ///Query arguments for API, if any
@@ -32,7 +32,7 @@ final class RMRequest {
             pathComponents.forEach({string += "/\($0)"})
         }
         
-        if !queryParameters.isEmpty{
+        if !queryParameters.isEmpty {
             string += "?"
             let argumentString = queryParameters.compactMap({
                guard let value = $0.value else { return nil }
@@ -97,4 +97,6 @@ final class RMRequest {
 
 extension RMRequest {
     static let listCharacterRequest = RMRequest(endpoint: .character)
+    static let listEpisodeRequest = RMRequest(endpoint: .episode)
+    static let listLocationRequest = RMRequest(endpoint: .location)
 }

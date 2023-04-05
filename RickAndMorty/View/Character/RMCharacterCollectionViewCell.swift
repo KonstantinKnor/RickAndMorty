@@ -6,7 +6,6 @@
 //
 
 import UIKit
-
 /// Single cell for a character
 final class RMCharacterCollectionViewCell: UICollectionViewCell {
     static let cellIdentifier = "RMCharacterCollectionViewCell"
@@ -67,16 +66,13 @@ final class RMCharacterCollectionViewCell: UICollectionViewCell {
             imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
             imageView.bottomAnchor.constraint(equalTo: nameLabel.topAnchor, constant: -3)
         ])
-        
-        
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+       
     }
-    
-    public func configure(with viewModel : RMCharacterCollectionViewCellViewModel){
+    public func configure(with viewModel : RMCharacterCollectionViewCellViewModel) {
         statusLabel.text = viewModel.characterStatusText
         nameLabel.text = viewModel.characterName
         viewModel.fetchImage { [weak self] result in
